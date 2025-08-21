@@ -3,226 +3,191 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-  <title>PulseCam — Realtime BPM via Phone Camera</title>
+  <title>PulseCam — Stable BPM + HRV (v2.5)</title>
   <meta name="theme-color" content="#0ea5e9" />
   <style>
-    :root {
-      --bg: #0b1220;
-      --card: #0f172a;
-      --muted: #94a3b8;
-      --text: #e2e8f0;
-      --accent: #22d3ee;
-      --good: #34d399;
-      --warn: #fbbf24;
-      --bad: #f87171;
+    :root{
+      --bg:#0b1220; --card:#0f172a; --muted:#94a3b8; --text:#e2e8f0; --accent:#22d3ee;
+      --good:#34d399; --warn:#fbbf24; --bad:#f87171;
     }
-    * { box-sizing: border-box; }
-    html, body { height: 100%; }
-    body {
-      margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
-      background: radial-gradient(1200px 800px at 70% -10%, #10315955, transparent), var(--bg);
-      color: var(--text);
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+      background:var(--bg); color:var(--text);
     }
-    .wrap { max-width: 960px; margin: 0 auto; padding: 16px; }
-    header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-    h1 { font-size: clamp(20px, 3vw, 28px); margin: 8px 0; letter-spacing: 0.3px; }
-    .sub { color: var(--muted); font-size: 14px; }
-    .grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
-    @media (min-width: 820px) { .grid { grid-template-columns: 1.2fr 1fr; } }
-
-    .card { background: linear-gradient(180deg, #0e172a, #0b1220); border: 1px solid #1f2b47; border-radius: 18px; box-shadow: 0 10px 30px rgba(0,0,0,0.25); }
-    .card > .hd { display:flex; align-items:center; justify-content:space-between; padding: 14px 16px; border-bottom: 1px solid #1f2b47; }
-    .card > .bd { padding: 14px 16px; }
-    .btn {
-      border: 1px solid #1f2b47; background: #0b2033; color: var(--text);
-      border-radius: 10px; padding: 10px 14px; font-weight: 600; cursor: pointer;
-      transition: all .2s; display: inline-flex; align-items: center; gap: 10px;
-    }
-    .btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,0,0,0.25); }
-    .btn[disabled] { opacity: .6; cursor: not-allowed; filter: grayscale(.2); }
-    .stat { display:flex; gap: 16px; flex-wrap: wrap; }
-    .pill { background: #0b2033; border: 1px solid #1f2b47; border-radius: 999px; padding: 6px 10px; font-size: 12px; color: var(--muted); }
-
-    #bpm { font-size: clamp(48px, 8vw, 76px); font-weight: 800; margin: 12px 0 4px; }
-    #qual { font-size: 13px; color: var(--muted); }
-
-    .row { display:flex; align-items:center; gap:10px; flex-wrap: wrap; }
-    .row > * { flex: 1 1 auto; }
-
-    canvas { width: 100%; height: 240px; background: #07101d; border-radius: 12px; border: 1px solid #1f2b47; display: block; }
-    #video { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events:none; }
-
-    .hint { font-size: 13px; color: var(--muted); line-height: 1.45; }
-    .log { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; color: #9fb3c8; max-height: 120px; overflow: auto; background: #07101d; border: 1px solid #1f2b47; border-radius: 10px; padding: 8px; }
-
-    .badge { font-size: 11px; padding: 2px 8px; border-radius: 999px; border:1px solid #1f2b47; background:#0b2033; color:var(--muted); }
-    .ok { color: var(--good); }
-    .warn { color: var(--warn); }
-    .bad { color: var(--bad); }
+    .wrap{ max-width:1080px; margin:0 auto; padding:16px; }
+    header{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    h1{ margin:6px 0 2px; font-size:22px; }
+    .sub{ color:var(--muted); font-size:13px; }
+    .grid{ display:grid; grid-template-columns:1fr; gap:12px; }
+    @media (min-width:980px){ .grid{ grid-template-columns:1.2fr 1fr; } }
+    .card{ background:linear-gradient(180deg,#0e172a,#0b1220); border:1px solid #1f2b47; border-radius:16px; }
+    .card > .hd{ display:flex; align-items:center; justify-content:space-between; padding:12px 14px; border-bottom:1px solid #1f2b47; }
+    .card > .bd{ padding:12px 14px; }
+    .btn{ border:1px solid #1f2b47; background:#0b2033; color:var(--text); border-radius:10px; padding:9px 14px; font-weight:700; cursor:pointer; }
+    .btn[disabled]{ opacity:.55; cursor:not-allowed; }
+    .pill{ background:#0b2033; border:1px solid #1f2b47; border-radius:999px; padding:5px 8px; font-size:12px; color:var(--muted); margin-left:6px; }
+    #bpm{ font-size:56px; font-weight:800; margin:10px 0 2px; }
+    #qual{ font-size:13px; color:var(--muted); }
+    video, canvas{ display:block; width:100%; border-radius:12px; background:#000; }
+    #preview{ max-height:220px; }
+    #wave{ height:240px; border:1px solid #1f2b47; margin-top:10px; }
+    .ok{ color:var(--good); } .warn{ color:var(--warn); } .bad{ color:var(--bad); }
+    .log{ font-family: ui-monospace, Menlo, Consolas, monospace; font-size:12px; color:#9fb3c8; max-height:140px; overflow:auto; background:#07101d; border:1px solid #1f2b47; border-radius:10px; padding:8px; }
+    .hrvgrid{ display:grid; grid-template-columns: repeat(2, 1fr); gap:10px; }
+    @media (min-width:720px){ .hrvgrid{ grid-template-columns: repeat(3, 1fr); } }
+    .scores{ display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; }
+    .scoreBox{ background:#0b2033; border:1px solid #1f2b47; border-radius:12px; padding:10px; text-align:center; }
+    .scoreVal{ font-size:24px; font-weight:800; }
   </style>
 </head>
 <body>
   <div class="wrap">
     <header>
       <div>
-        <h1>PulseCam <span class="badge">PPG</span></h1>
-        <div class="sub">Place your fingertip gently on the rear camera. We'll analyze color changes to estimate your heart rate.</div>
+        <h1>PulseCam <span class="pill">PPG v2.5</span></h1>
+        <div class="sub">Green-ROI reflectance PPG · Stable BPM + HRV (RMSSD, SDNN, pNN50). HTTPS required.</div>
       </div>
-      <div class="row" style="justify-content:flex-end; max-width: 420px;">
-        <button id="startBtn" class="btn">▶ Start</button>
-        <button id="stopBtn" class="btn" disabled>■ Stop</button>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button id="startBtn" class="btn" type="button">▶ Start</button>
+        <button id="stopBtn" class="btn" type="button" disabled>■ Stop</button>
+        <button id="torchBtn" class="btn" type="button" disabled>💡 Torch</button>
       </div>
     </header>
 
-    <div class="grid" style="margin-top: 14px;">
+    <div class="grid" style="margin-top:12px;">
       <section class="card">
         <div class="hd">
           <strong>Signal</strong>
-          <div class="stat">
+          <div>
             <span class="pill" id="fr">FPS: —</span>
             <span class="pill" id="torchState">Torch: —</span>
             <span class="pill" id="coverage">Coverage: —</span>
+            <span class="pill" id="sat">Saturation: —</span>
+            <span class="pill" id="sqi">SQI: —</span>
           </div>
         </div>
         <div class="bd">
+          <video id="preview" playsinline muted></video>
           <canvas id="wave"></canvas>
-          <div class="hint" style="margin-top: 10px;">
-            Tip: On Android Chrome, torch can be enabled automatically on supported devices. If torch fails, use an external light or press your finger a bit more gently.
-          </div>
+          <div class="sub" style="margin-top:8px;">Tip: Fully cover the rear camera with your fingertip. Use gentle pressure and keep still.</div>
         </div>
       </section>
 
       <section class="card">
-        <div class="hd"><strong>Heart Rate</strong><span class="pill" id="quality">Quality: —</span></div>
+        <div class="hd">
+          <strong>Heart</strong>
+          <div>
+            <span class="pill" id="quality">Quality: —</span>
+            <span class="pill" id="conf">Confidence: —</span>
+          </div>
+        </div>
         <div class="bd">
           <div id="bpm">—</div>
           <div id="qual">Waiting for a stable signal…</div>
-          <div class="hint" style="margin-top: 8px;">
-            We compute BPM from peaks in a band‑passed red‑channel signal (0.7–3.3 Hz ~ 42–198 BPM) with outlier rejection.
-          </div>
-          <div class="log" id="log" style="margin-top: 10px;"></div>
+          <div class="log" id="log" style="margin-top:10px;"></div>
         </div>
       </section>
     </div>
 
-    <video id="video" playsinline muted></video>
+    <!-- HRV Panel -->
+    <section class="card" style="margin-top:12px;">
+      <div class="hd">
+        <strong>HRV (last 60s)</strong>
+        <div>
+          <span class="pill" id="hrvBeats">Beats: —</span>
+          <span class="pill" id="hrvQual">HRV Quality: —</span>
+        </div>
+      </div>
+      <div class="bd">
+        <div class="hrvgrid">
+          <div><div class="sub">Mean HR</div><div style="font-size:24px;font-weight:700" id="meanHR">—</div></div>
+          <div><div class="sub">SDNN (ms)</div><div style="font-size:24px;font-weight:700" id="sdnn">—</div></div>
+          <div><div class="sub">RMSSD (ms)</div><div style="font-size:24px;font-weight:700" id="rmssd">—</div></div>
+          <div><div class="sub">pNN50 (%)</div><div style="font-size:24px;font-weight:700" id="pnn50">—</div></div>
+          <div><div class="sub">IBIs used</div><div style="font-size:24px;font-weight:700" id="rrUsed">—</div></div>
+          <div><div class="sub">Artifacts dropped</div><div style="font-size:24px;font-weight:700" id="rrDropped">—</div></div>
+        </div>
+        <div class="sub" style="margin-top:8px;">HRV needs a calm, steady signal. Aim for ≥60 s of clean data.</div>
+      </div>
+    </section>
+
+    <!-- Friendly Scores -->
+    <section class="card" style="margin-top:12px;">
+      <div class="hd">
+        <strong>Wellness Scores</strong>
+        <span class="pill">Relative to your baseline</span>
+      </div>
+      <div class="bd">
+        <div class="scores">
+          <div class="scoreBox">
+            <div class="sub">Energy</div>
+            <div class="scoreVal" id="energy">—%</div>
+          </div>
+          <div class="scoreBox">
+            <div class="sub">Stress</div>
+            <div class="scoreVal" id="stress">—%</div>
+          </div>
+          <div class="scoreBox">
+            <div class="sub">Health</div>
+            <div class="scoreVal" id="health">—%</div>
+          </div>
+        </div>
+        <div class="sub" style="margin-top:8px;">These are guidance, not medical diagnostics. They adapt to your personal baseline over time.</div>
+      </div>
+    </section>
   </div>
 
+  <!-- Hidden processing video element -->
+  <video id="video" playsinline muted style="position:absolute; width:1px; height:1px; opacity:0; pointer-events:none;"></video>
+
   <script>
-    // --- Utilities ---
-    const log = (...a) => { const el = document.getElementById('log'); el.textContent = [new Date().toLocaleTimeString(), ...a].join(' ') + '\n' + el.textContent; };
-    const sleep = (ms) => new Promise(r=>setTimeout(r, ms));
+    // ===== Logging =====
+    function log(){
+      const el = document.getElementById('log');
+      if(!el) return;
+      const msg = `[${new Date().toLocaleTimeString()}] ${Array.from(arguments).join(' ')}\n`;
+      el.textContent = msg + el.textContent;
+    }
+    window.addEventListener('error', (e)=>log('Runtime error:', e.message));
+    window.addEventListener('unhandledrejection', (e)=>log('Promise rejection:', (e.reason && e.reason.message) || e.reason));
 
-    // --- State ---
-    let stream, track, imageCapture, torchAvailable = false, torchOn = false;
-    let rafId = null, procId = null;
-    let ctx, cvs, v, drawCtx, drawCvs;
-    let lastFrameTs = performance.now();
+    // ===== State =====
+    let stream, track, torchOn=false;
+    let v, preview, ctx, cvs, drawCtx, drawCvs;
+    let rafId=null, procId=null, estId=null;
+    let visibilityPaused=false;
 
-    // Signal buffers
-    const BUFFER_SECS = 12;            // rolling window for analysis
-    const TARGET_FPS = 30;             // analysis rate
-    const MAX_SAMPLES = BUFFER_SECS * TARGET_FPS;
-    let times = new Float64Array(MAX_SAMPLES);
-    let samples = new Float32Array(MAX_SAMPLES);
+    // Processing constants
+    const RS = 30;                // resample rate (Hz)
+    const BUFFER_SECS = 18;       // raw ring capacity
+    const MAX_RAW = RS * BUFFER_SECS * 4;
+
+    // Raw rings (irregular time base)
+    const times   = new Float64Array(MAX_RAW);
+    const samples = new Float32Array(MAX_RAW);
     let wr = 0, count = 0;
 
-    // Quality metrics
-    function coverageMetric(frame, w, h) {
-      // Estimate how much of the frame is covered by a finger by checking red dominance
-      let redDominant = 0; const step = 4 * 8; // sample every 8 pixels
-      for (let i=0; i<frame.data.length; i+=step) {
-        const r = frame.data[i], g = frame.data[i+1], b = frame.data[i+2];
-        if (r > g * 1.2 && r > b * 1.2) redDominant++;
-      }
-      const pct = redDominant / (frame.data.length/step);
-      return pct; // 0..1
-    }
+    // Uniform grid buffers (15 s)
+    const UNIFORM_N = RS * 15;
+    const uniT = new Float64Array(UNIFORM_N);
+    const uniY = new Float32Array(UNIFORM_N);
 
-    // Simple IIR filters for bandpass (highpass + lowpass)
-    function makeOnePoleLP(alpha) { let y=0; return x=>{ y = y + alpha*(x - y); return y; }; }
-    function makeOnePoleHP(alpha) { let y=0, prevX=0; return x=>{ const lp = y + alpha*(x - y); y = lp; const hp = x - lp; prevX = x; return hp; }; }
+    // Beats for HRV (absolute seconds)
+    const beatTimes = [];
+    let lastAppendedBeatTime = 0;
 
-    // Peak detection with refractory period and dynamic threshold
-    let lastPeakTime = 0; let dynThresh = 0.0;
-    function detectPeaks(t, x) {
-      // Update dynamic threshold as a fraction of signal RMS
-      const rms = Math.sqrt(rollingRMS());
-      dynThresh = 0.4 * rms; // 40% of RMS
-      const minInterval = 0.35; // seconds (~171 BPM max)
-      if (x > dynThresh && prevX <= dynThresh) {
-        const dt = (t - lastPeakTime);
-        if (dt > minInterval) { lastPeakTime = t; return true; }
-      }
-      return false;
-    }
-    let prevX = 0;
+    // BPM smoothing history
+    const bpmHist = [];
+    const BPM_HIST_N = 9;
 
-    // Rolling RMS over window (last 3s)
-    function rollingRMS() {
-      const secs = 3.0; const n = Math.min(count, Math.floor(secs*TARGET_FPS));
-      if (n < 2) return 0.0001;
-      let sum=0; for (let i=0;i<n;i++){ const idx=(wr - 1 - i + MAX_SAMPLES) % MAX_SAMPLES; const v=samples[idx]; sum += v*v; }
-      return sum / n;
-    }
+    let lastFrameTime = 0;
+    let lowFPSSince = null; // for FPS watchdog
 
-    // Compute BPM from recent peaks (last 8s), with outlier rejection
-    function bpmFromPeaks() {
-      const window = 8.0; const now = times[(wr - 1 + MAX_SAMPLES) % MAX_SAMPLES] || 0;
-      // collect peak times
-      const peaks = [];
-      let looking = false, last = -1, start = Math.max(0, count - Math.floor(window*TARGET_FPS));
-      let localThresh = 0.35 * Math.sqrt(rollingRMS());
-      for (let i = start; i < count; i++) {
-        const idx = (wr - count + i + MAX_SAMPLES) % MAX_SAMPLES;
-        const t = times[idx], x = samples[idx];
-        if (!looking && x > localThresh && prevX <= localThresh) { looking = true; last = t; }
-        if (looking && x < localThresh) { looking = false; if (last>0) peaks.push(last); last = -1; }
-      }
-      if (peaks.length < 2) return { bpm: NaN, rr: [] };
-      const rr = [];
-      for (let i=1;i<peaks.length;i++) { rr.push(peaks[i]-peaks[i-1]); }
-      // reject outliers via IQR
-      rr.sort((a,b)=>a-b);
-      const q1 = rr[Math.floor(rr.length*0.25)], q3 = rr[Math.floor(rr.length*0.75)];
-      const iqr = q3 - q1; const lo = Math.max(0.3, q1 - 1.5*iqr), hi = Math.min(2.0, q3 + 1.5*iqr);
-      const filtered = rr.filter(v => v>=lo && v<=hi);
-      if (filtered.length < 2) return { bpm: NaN, rr: rr };
-      const meanRR = filtered.reduce((a,b)=>a+b,0)/filtered.length;
-      const bpm = 60 / meanRR;
-      return { bpm, rr: filtered };
-    }
-
-    // Drawing
-    function draw() {
-      const W = drawCvs.width, H = drawCvs.height; const ctx = drawCtx;
-      ctx.clearRect(0,0,W,H);
-      ctx.fillStyle = '#081325'; ctx.fillRect(0,0,W,H);
-      ctx.strokeStyle = '#1f2b47'; ctx.lineWidth = 1; ctx.beginPath();
-      for (let x=0; x<W; x+=Math.floor(W/12)) { ctx.moveTo(x,0); ctx.lineTo(x,H); }
-      for (let y=0; y<H; y+=Math.floor(H/6)) { ctx.moveTo(0,y); ctx.lineTo(W,y); }
-      ctx.stroke();
-
-      // plot signal
-      ctx.beginPath(); ctx.lineWidth = 2; ctx.strokeStyle = '#7dd3fc';
-      const n = Math.min(count, MAX_SAMPLES);
-      if (n>2) {
-        const startIdx = (wr - n + MAX_SAMPLES) % MAX_SAMPLES;
-        const t0 = times[startIdx];
-        for (let i=0;i<n;i++) {
-          const idx = (startIdx + i) % MAX_SAMPLES;
-          const x = (times[idx] - t0) / BUFFER_SECS; // 0..1
-          const y = samples[idx];
-          const px = x * W; const py = H*0.5 - y * (H*0.35);
-          if (i===0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
-        }
-        ctx.stroke();
-      }
-      rafId = requestAnimationFrame(draw);
-    }
-
-    function updateStatus(id, text) { document.getElementById(id).textContent = text; }
-    function setQuality(status, msg) {
+    // ===== UI helpers =====
+    const setText = (id, t) => { const el = document.getElementById(id); if (el) el.textContent = t; };
+    function setQuality(status, msg){
       const el = document.getElementById('quality');
       el.textContent = `Quality: ${status}`;
       el.classList.remove('ok','warn','bad');
@@ -230,132 +195,589 @@
       document.getElementById('qual').textContent = msg;
     }
 
-    async function start() {
+    // ===== Metrics (green-aligned) =====
+    function saturationMetric(frame){
+      // Any channel clipped OR (prefer green) near clipping
+      let sat=0; const step=32;
+      for(let i=0;i<frame.data.length;i+=step){
+        const r=frame.data[i], g=frame.data[i+1], b=frame.data[i+2];
+        if (r>=250 || g>=250 || b>=250) sat++;
+      }
+      return sat/(frame.data.length/step);
+    }
+    function coverageMetric(frame){
+      // Finger presence: high mean green & low chroma (occlusion desaturates)
+      let cnt=0, good=0; const step=32;
+      for(let i=0;i<frame.data.length;i+=step){
+        const r=frame.data[i], g=frame.data[i+1], b=frame.data[i+2];
+        const maxc=Math.max(r,g,b), minc=Math.min(r,g,b);
+        const chroma=maxc-minc;
+        if (g>60){
+          cnt++;
+          if (chroma<20) good++;
+        }
+      }
+      return cnt? good/cnt : 0;
+    }
+
+    // ===== DSP helpers =====
+    const clamp = (x,a,b)=>Math.max(a,Math.min(b,x));
+
+    function detrendUniform(y, alpha){
+      // One-pole high-pass via EMA subtraction; alpha set for ~0.25 Hz
+      let m = y[0];
+      for(let i=0;i*y.length;i++); // placeholder to avoid accidental fallthrough
+      for(let i=0;i<y.length;i++){
+        m = m + alpha*(y[i]-m);
+        y[i] = y[i]-m;
+      }
+    }
+
+    class Biquad{
+      constructor(type, fs, f0, Q){
+        this.type=type; this.fs=fs; this.f0=f0; this.Q=Q;
+        this.x1=this.x2=this.y1=this.y2=0; this.update();
+      }
+      update(){
+        const fs=this.fs, f0=this.f0, Q=this.Q;
+        const w0=2*Math.PI*f0/fs, alpha=Math.sin(w0)/(2*Q), cos=Math.cos(w0);
+        let b0,b1,b2,a0,a1,a2;
+        if(this.type==='lowpass'){ b0=(1-cos)/2; b1=1-cos; b2=(1-cos)/2; a0=1+alpha; a1=-2*cos; a2=1-alpha; }
+        else if(this.type==='highpass'){ b0=(1+cos)/2; b1=-(1+cos); b2=(1+cos)/2; a0=1+alpha; a1=-2*cos; a2=1-alpha; }
+        else { b0=Q*alpha; b1=0; b2=-Q*alpha; a0=1+alpha; a1=-2*cos; a2=1-alpha; }
+        this.b0=b0/a0; this.b1=b1/a0; this.b2=b2/a0; this.a1=a1/a0; this.a2=a2/a0;
+      }
+      process(x){
+        const y=this.b0*x + this.b1*this.x1 + this.b2*this.x2 - this.a1*this.y1 - this.a2*this.y2;
+        this.x2=this.x1; this.x1=x; this.y2=this.y1; this.y1=y; return y;
+      }
+      reset(){ this.x1=this.x2=this.y1=this.y2=0; }
+    }
+
+    // Filters: HP 0.6 Hz, LP 3.5 Hz (≈ 36–210 BPM)
+    const hp = new Biquad('highpass', RS, 0.6, 0.707);
+    const lp = new Biquad('lowpass',  RS, 3.5, 0.707);
+
+    function bandlimitInPlace(){
+      hp.reset(); lp.reset();
+      for(let i=0;i<UNIFORM_N;i++){ uniY[i] = lp.process(hp.process(uniY[i])); }
+    }
+
+    function pushSample(t, x){
+      times[wr]=t; samples[wr]=x; wr=(wr+1)%MAX_RAW; count=Math.min(count+1, MAX_RAW);
+    }
+
+    function resampleUniform(){
+      if (count < RS*4) return false;
+      const now = performance.now()/1000, dt = 1/RS, start = now - (UNIFORM_N-1)*dt;
+      for (let i=0;i<UNIFORM_N;i++) uniT[i] = start + i*dt;
+
+      const n = count;
+      const bufT=new Float64Array(n), bufY=new Float32Array(n);
+      for (let i=0;i<n;i++){
+        const idx=(wr - n + i + MAX_RAW)%MAX_RAW;
+        bufT[i]=times[idx]; bufY[i]=samples[idx];
+      }
+      let j=1;
+      for (let i=0;i<UNIFORM_N;i++){
+        const t=uniT[i];
+        while (j<n && bufT[j] < t) j++;
+        if (j<=0){ uniY[i]=bufY[0]; continue; }
+        if (j>=n){ uniY[i]=bufY[n-1]; continue; }
+        const t1=bufT[j-1], t2=bufT[j], y1=bufY[j-1], y2=bufY[j];
+        const a=(t - t1)/Math.max(1e-6,(t2-t1));
+        uniY[i] = y1 + a*(y2 - y1);
+      }
+      return true;
+    }
+
+    // ===== Estimators =====
+    function autocorrEstimate(){
+      const N = UNIFORM_N;
+      // Normalize (zero-mean, unit-ish variance)
+      let mean=0; for (let i=0;i<N;i++) mean += uniY[i]; mean/=N;
+      let varr=0;
+      for (let i=0;i<N;i++){ const d=uniY[i]-mean; uniY[i]=d; varr += d*d; }
+      const norm = Math.sqrt(varr/N)+1e-6;
+      for (let i=0;i<N;i++) uniY[i]/=norm;
+
+      const minBPM=40, maxBPM=180;
+      const minLag = Math.floor(RS*60/maxBPM);
+      const maxLag = Math.floor(RS*60/minBPM);
+
+      let bestLag=-1, bestVal=-1, second=0;
+      const corr = (lag)=>{ let s=0; for(let i=lag;i<N;i++) s += uniY[i]*uniY[i-lag]; return s; };
+      for (let lag=minLag; lag<=maxLag; lag++){
+        const s = corr(lag);
+        if (s>bestVal){ second=bestVal; bestVal=s; bestLag=lag; }
+        else if (s>second){ second=s; }
+      }
+      if (bestLag<0) return { bpm:null, conf:0 };
+
+      const L=bestLag, y1=corr(Math.max(minLag,L-1)), y2=bestVal, y3=corr(Math.min(maxLag,L+1));
+      const denom=(y1 - 2*y2 + y3);
+      const delta=denom!==0 ? 0.5*(y1 - y3)/denom : 0;
+      const refinedLag = clamp(L + delta, minLag, maxLag);
+      const bpm = 60 * RS / refinedLag;
+      const confAC = clamp((bestVal - second) / Math.max(1e-6, 1 - second), 0, 1);
+      return { bpm, conf: confAC };
+    }
+
+    function peakDetect(){
+      const N = UNIFORM_N;
+      if (N < RS*5) return { bpm:null, conf:0, peaks:[] };
+
+      // RMS-based threshold (signal after bandlimit)
+      let rms=0; for(let i=0;i<N;i++) rms += uniY[i]*uniY[i];
+      rms = Math.sqrt(rms/N);
+      const thr = 0.3 * rms;
+
+      const peaks=[], refractory = Math.floor(0.3*RS); // 300 ms (<= 200 BPM)
+      let last = -refractory;
+      for(let i=1;i<N-1;i++){
+        if (i-last < refractory) continue;
+        if (uniY[i] > thr && uniY[i] > uniY[i-1] && uniY[i] > uniY[i+1]){
+          peaks.push(uniT[i]);
+          last=i;
+        }
+      }
+      if (peaks.length < 2) return { bpm:null, conf:0, peaks:[] };
+
+      const intervals = [];
+      for (let i=1;i<peaks.length;i++) intervals.push(peaks[i]-peaks[i-1]);
+      const avg = intervals.reduce((a,b)=>a+b,0)/intervals.length;
+      const sd  = Math.sqrt(intervals.reduce((a,b)=>a + (b-avg)*(b-avg),0)/Math.max(1, intervals.length-1));
+      const cv  = sd / Math.max(1e-6, avg);
+      const bpm = 60/avg;
+      const conf = clamp(1 - cv, 0, 1);
+      return { bpm, conf, peaks };
+    }
+
+    // ===== HRV utils =====
+    function computeHRVFromBeats(now){
+      // Keep only last 120 s; compute HRV on last 60 s
+      while (beatTimes.length && beatTimes[0] < now - 120) beatTimes.shift();
+      const windowStart = now - 60;
+      const beats = beatTimes.filter(t => t >= windowStart);
+      setText('hrvBeats', 'Beats: ' + beats.length);
+
+      if (beats.length < 5){
+        setText('hrvQual','HRV Quality: Low');
+        setText('meanHR','—'); setText('sdnn','—'); setText('rmssd','—'); setText('pnn50','—');
+        setText('rrUsed','0'); setText('rrDropped','0');
+        setScoresInvalid();
+        return;
+      }
+
+      // RR intervals (ms)
+      const rr = [];
+      for (let i=1;i<beats.length;i++){ rr.push((beats[i]-beats[i-1]) * 1000); }
+
+      // Artifact handling
+      const rrRangeFiltered = rr.filter(x => x>=300 && x<=2000);
+      const med = median(rrRangeFiltered);
+      const rrClean = rrRangeFiltered.filter(x => Math.abs(x - med) <= 0.20 * med); // ±20%
+      const dropped = rr.length - rrClean.length;
+
+      if (rrClean.length < 3){
+        setText('hrvQual','HRV Quality: Low');
+        setText('meanHR','—'); setText('sdnn','—'); setText('rmssd','—'); setText('pnn50','—');
+        setText('rrUsed', rrClean.length.toString()); setText('rrDropped', dropped.toString());
+        setScoresInvalid();
+        return;
+      }
+
+      const meanRR = mean(rrClean);
+      const sdnn = std(rrClean);
+      const diffs = successiveDiffs(rrClean);
+      const rmssd = Math.sqrt(mean(diffs.map(x => x*x)));
+      const pnn50 = 100 * (diffs.filter(x => Math.abs(x) > 50).length / Math.max(1, diffs.length));
+      const meanHR = 60000 / meanRR;
+
+      // CV of RR for quality gate
+      const rrMean = mean(rrClean);
+      const rrSd   = std(rrClean);
+      const rrCv   = rrSd / Math.max(1e-6, rrMean);
+
+      // Display
+      setText('meanHR', Math.round(meanHR) + ' bpm');
+      setText('sdnn', Math.round(sdnn).toString());
+      setText('rmssd', Math.round(rmssd).toString());
+      setText('pnn50', pnn50.toFixed(1));
+      setText('rrUsed', rrClean.length.toString());
+      setText('rrDropped', dropped.toString());
+
+      const hrvOK = (rmssd>5 && sdnn>5 && rrClean.length>=15 && meanHR>=40 && meanHR<=120 && rrCv<0.20);
+      setText('hrvQual', 'HRV Quality: ' + (hrvOK ? 'OK' : 'Low'));
+
+      // Friendly scores + baselines (only when OK)
+      if (hrvOK){
+        const base = getBaseline();
+        const e = energyPct(rmssd, meanHR, base);
+        const s = stressPct(rmssd, meanHR, pnn50, base);
+        const hInst = healthPct(sdnn, pnn50, rmssd, base);
+        const h = emaUpdate('healthPct', hInst, 0.9);
+        setText('energy', e + '%'); setText('stress', s + '%'); setText('health', h + '%');
+        // Persist baselines occasionally (every ~15s)
+        if (!computeHRVFromBeats._lastUpdate || now - computeHRVFromBeats._lastUpdate > 15){
+          updateBaselines({rmssd, sdnn, hr: meanHR});
+          computeHRVFromBeats._lastUpdate = now;
+        }
+      } else {
+        setScoresInvalid();
+      }
+    }
+
+    function setScoresInvalid(){
+      setText('energy','—%'); setText('stress','—%'); setText('health','—%');
+    }
+
+    const mean = arr => arr.reduce((a,b)=>a+b,0)/arr.length;
+    const median = arr => {
+      if(!arr.length) return 0;
+      const s=[...arr].sort((a,b)=>a-b);
+      const m=Math.floor(s.length/2);
+      return s.length%2?s[m] : (s[m-1]+s[m])/2;
+    };
+    const std = arr => {
+      const m=mean(arr); let v=0; for(const x of arr) v+=(x-m)*(x-m);
+      return Math.sqrt(v/Math.max(1,arr.length-1));
+    };
+    const successiveDiffs = arr => arr.slice(1).map((x,i)=>x - arr[i]);
+
+    // ===== Frame processing =====
+    function processFrame(){
+      if (!v.videoWidth) return;
+
+      ctx.drawImage(v,0,0,cvs.width,cvs.height);
+      const frame = ctx.getImageData(0,0,cvs.width,cvs.height);
+
+      const cov = coverageMetric(frame);
+      setText('coverage', `Coverage: ${(cov*100|0)}%`);
+      const sat = saturationMetric(frame);
+      setText('sat', `Saturation: ${(sat*100|0)}%`);
+
+      // Center ROI — use GREEN channel mean intensity
+      const W=cvs.width, H=cvs.height;
+      const rx=Math.floor(W*0.25), ry=Math.floor(H*0.25), rw=Math.floor(W*0.5), rh=Math.floor(H*0.5);
+      let sum=0, sum2=0, n=0;
+      for (let y=ry;y<ry+rh;y++){
+        for (let x=rx;x<rx+rw;x++){
+          const i=(y*W + x)*4;
+          const g=frame.data[i+1];
+          sum+=g; sum2+=g*g; n++;
+        }
+      }
+      const meanG = sum/n;
+      const stdG = Math.sqrt(Math.max(0, sum2/n - (meanG*meanG)));
+
+      // Raw sample: mean green intensity
+      const raw = meanG;
+      const now = performance.now()/1000;
+      pushSample(now, raw);
+
+      // FPS + watchdog
+      const dt = now - (lastFrameTime || now);
+      lastFrameTime = now;
+      const fps = 1/Math.max(dt, 1/120);
+      setText('fr', 'FPS: ' + fps.toFixed(0));
+      if (fps < 20){
+        if (!lowFPSSince) lowFPSSince = now;
+        if (now - lowFPSSince > 3){
+          setQuality('Fair','Low frame rate. Keep device cool/close apps.');
+          // Try to re-apply constraints gently once
+          try { track && track.applyConstraints && track.applyConstraints({}); } catch(_){}
+        }
+      } else { lowFPSSince = null; }
+
+      // SQI
+      const sqi = computeSQI(meanG, stdG, cov, sat);
+      setText('sqi', 'SQI: ' + Math.round(sqi*100) + '%');
+
+      // Guidance
+      if (cov < 0.25) setQuality('Poor','Cover the camera fully with your fingertip.');
+      else if (sat > 0.25) setQuality('Fair','Too bright; ease pressure or adjust finger.');
+      else if (fps < 20) setQuality('Fair','Low frame rate. Keep device cool/close apps.');
+      else if (sqi < 0.35) setQuality('Fair','Hold steady and relax your finger.');
+      else setQuality('Good','Hold steady. Breathe normally.');
+    }
+
+    function computeSQI(frameMean, frameStd, coverage, sat){
+      const acdc = clamp((frameStd/Math.max(1e-3, frameMean)) * 5, 0, 1);
+      const covf = clamp((coverage - 0.2)/0.6, 0, 1);
+      const satf = 1 - clamp((sat - 0.05)/0.3, 0, 1);
+      return clamp(0.2*acdc + 0.5*covf + 0.3*satf, 0, 1);
+    }
+
+    // ===== BPM + HRV estimation each second =====
+    function estimateBPM(){
+      if (!resampleUniform()) return;
+
+      // Gentle detrend (~0.25 Hz) to avoid double HP aggressiveness
+      const alpha_025Hz = 1 - Math.exp(-2*Math.PI*0.25 / RS);
+      detrendUniform(uniY, alpha_025Hz);
+
+      // Bandlimit to ~0.6–3.5 Hz
+      bandlimitInPlace();
+
+      const ac = autocorrEstimate();
+      const pk = peakDetect();
+
+      // Append new beats for HRV (timebase guard + retro-protect)
+      if (pk && pk.peaks && pk.peaks.length){
+        for (const t of pk.peaks){
+          if (t > lastAppendedBeatTime + 1e-6){
+            beatTimes.push(t);
+            lastAppendedBeatTime = t;
+          }
+        }
+      }
+
+      // Fuse estimates
+      let bpm=null, conf=0;
+      if (ac.bpm && pk && pk.bpm){
+        bpm = 0.6*ac.bpm + 0.4*pk.bpm;
+        conf = clamp(0.6*ac.conf + 0.4*pk.conf, 0, 1);
+      } else if (ac.bpm){ bpm = ac.bpm; conf = ac.conf; }
+      else if (pk && pk.bpm){ bpm = pk.bpm; conf = pk.conf; }
+
+      if (!bpm){
+        setText('bpm','—'); setText('conf','Confidence: 0%');
+        computeHRVFromBeats(performance.now()/1000);
+        return;
+      }
+
+      // Smoothing with clamp
+      bpmHist.push(bpm); if (bpmHist.length > BPM_HIST_N) bpmHist.shift();
+      const alpha = 0.10;
+      const prev = estimateBPM.smooth ?? bpm;
+      const proposal = prev*(1-alpha) + bpm*alpha;
+      const maxDelta = 5;
+      const clamped = clamp(proposal, prev - maxDelta, prev + maxDelta);
+      estimateBPM.smooth = clamped;
+
+      const finalBPM = Math.round(clamped);
+      const bounded = finalBPM>=40 && finalBPM<=180;
+      const confAdj = bounded ? conf : 0;
+
+      setText('conf', `Confidence: ${(confAdj*100|0)}%`);
+      if (!bounded || confAdj < 0.2){
+        setText('bpm','—');
+        setQuality('Poor','Unstable signal; adjust finger/lighting.');
+      } else {
+        setText('bpm', String(finalBPM));
+      }
+
+      // HRV update
+      computeHRVFromBeats(performance.now()/1000);
+    }
+
+    // ===== Drawing =====
+    function draw(){
+      const W=drawCvs.width, H=drawCvs.height;
+      const ctx=drawCtx;
+      ctx.clearRect(0,0,W,H);
+      ctx.fillStyle='#081325'; ctx.fillRect(0,0,W,H);
+
+      ctx.strokeStyle='#1f2b47'; ctx.lineWidth=1; ctx.beginPath();
+      for (let x=0;x<W;x+=Math.floor(W/12)){ ctx.moveTo(x,0); ctx.lineTo(x,H); }
+      for (let y=0;y<H;y+=Math.floor(H/6)){ ctx.moveTo(0,y); ctx.lineTo(W,y); }
+      ctx.stroke();
+
+      ctx.beginPath(); ctx.lineWidth=2; ctx.strokeStyle='#7dd3fc';
+      const N=UNIFORM_N;
+      if (N>2 && uniT[0]!==0){
+        const t0=uniT[0], totalSec=(N/RS);
+        for (let i=0;i<N;i++){
+          const x=(uniT[i]-t0)/totalSec;
+          const y=uniY[i];
+          const px=x*W;
+          const py=H*0.5 - y*(H*0.35);
+          if (i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+        }
+        ctx.stroke();
+      }
+      rafId = requestAnimationFrame(draw);
+    }
+
+    // ===== Baselines & Scores =====
+    function getBaseline(){
+      try{
+        const raw = localStorage.getItem('pulsecam_baseline_v1');
+        if (raw){ return JSON.parse(raw); }
+      }catch(_){}
+      return {
+        rmssd:{ med:30, iqr:15 },
+        sdnn:{  med:40, iqr:20 },
+        hr:{    med:70, iqr:8  }
+      };
+    }
+    function saveBaseline(base){
+      try{ localStorage.setItem('pulsecam_baseline_v1', JSON.stringify(base)); }catch(_){}
+    }
+    function robustPush(stats, x){
+      // Very simple rolling update for med/iqr via EMA toward observed value & spread
+      const kMed=0.05, kIqr=0.05;
+      const delta = x - stats.med;
+      stats.med += kMed * delta;
+      // Approximate IQR update using abs dev
+      const ad = Math.abs(delta);
+      stats.iqr += kIqr * (ad - stats.iqr);
+    }
+    function updateBaselines({rmssd, sdnn, hr}){
+      const base = getBaseline();
+      robustPush(base.rmssd, rmssd);
+      robustPush(base.sdnn,  sdnn);
+      robustPush(base.hr,    hr);
+      saveBaseline(base);
+    }
+
+    const clamp01 = x => Math.max(0, Math.min(1, x));
+    const rz = (x, med, iqr) => (iqr>0? (x - med) / (iqr*0.741) : 0); // IQR→σ approx
+    const sigmoid = z => 1/(1+Math.exp(-z));
+
+    function energyPct(rmssd, hr, base){
+      const zR = rz(rmssd, base.rmssd.med, base.rmssd.iqr);
+      const zH = rz(base.hr.med - hr, 0, base.hr.iqr);
+      const s  = 0.7 * sigmoid(zR) + 0.3 * sigmoid(zH);
+      return Math.round(100 * clamp01(s));
+    }
+    function stressPct(rmssd, hr, pnn50, base){
+      const zRinv = sigmoid(rz(base.rmssd.med - rmssd, 0, base.rmssd.iqr));
+      const zH    = sigmoid(rz(hr - base.hr.med, 0, base.hr.iqr));
+      const p50   = 1 - clamp01(pnn50 / 30);
+      const s     = 0.6*zRinv + 0.3*zH + 0.1*p50;
+      return Math.round(100 * clamp01(s));
+    }
+    function healthPct(sdnn, pnn50, rmssd, base){
+      const zS = sigmoid(rz(sdnn, base.sdnn.med, base.sdnn.iqr));
+      const p  = clamp01(pnn50 / 30);
+      const r  = sigmoid(rz(rmssd, base.rmssd.med, base.rmssd.iqr));
+      const s  = 0.5*zS + 0.35*p + 0.15*r;
+      return Math.round(100 * clamp01(s));
+    }
+    function emaUpdate(key, value, alpha){
+      const k = 'pulsecam_ema_'+key;
+      let prev = null;
+      try{ const raw = localStorage.getItem(k); if (raw!=null) prev = Number(raw); }catch(_){}
+      const out = prev==null ? value : Math.round(prev*alpha + value*(1-alpha));
+      try{ localStorage.setItem(k, String(out)); }catch(_){}
+      return out;
+    }
+
+    // ===== Camera / App lifecycle =====
+    async function start(){
       if (stream) return;
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({
+      try{
+        const constraints = {
           video: {
             facingMode: { ideal: 'environment' },
-            width: { ideal: 640 }, height: { ideal: 480 },
-            frameRate: { ideal: 60, max: 60 }
-          }, audio: false
-        });
-        v.srcObject = stream; track = stream.getVideoTracks()[0]; await v.play();
-        imageCapture = ('ImageCapture' in window) ? new ImageCapture(track) : null;
-        torchAvailable = false;
-        if (imageCapture && 'getPhotoCapabilities' in imageCapture) {
-          try {
-            const caps = await imageCapture.getPhotoCapabilities();
-            torchAvailable = !!caps.torch || (track.getCapabilities && track.getCapabilities().torch);
-          } catch (e) {
-            // Some devices throw here; try track capabilities
-            torchAvailable = track.getCapabilities && track.getCapabilities().torch;
-          }
-        } else if (track.getCapabilities) {
-          torchAvailable = track.getCapabilities().torch;
+            width:  { ideal: 320, max: 640 },
+            height: { ideal: 240, max: 480 },
+            frameRate: { min: 24, ideal: 60, max: 120 }
+          },
+          audio: false
+        };
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
+        v.srcObject = stream; preview.srcObject = stream;
+        track = stream.getVideoTracks()[0];
+        await v.play(); await preview.play();
+
+        // Torch availability
+        if (track.getCapabilities && track.getCapabilities().torch){
+          document.getElementById('torchBtn').disabled = false;
+          setText('torchState','Torch: available');
+          try{
+            await track.applyConstraints({ advanced:[{ torch:true }] });
+            torchOn=true; setText('torchState','Torch: on');
+          }catch(e){ log('Torch enable failed:', e.message); }
+        } else {
+          setText('torchState', 'Torch: not available');
         }
-        updateStatus('torchState', torchAvailable ? 'Torch: available' : 'Torch: not available');
-        if (torchAvailable) {
-          try {
-            await track.applyConstraints({ advanced: [{ torch: true }] });
-            torchOn = true; updateStatus('torchState', 'Torch: on');
-          } catch (e) { log('Torch enable failed:', e.message); }
-        }
+
+        initCanvas();
         runProcessing();
+
+        // Reset smoothing on new session
+        estimateBPM.smooth = undefined;
+
         document.getElementById('startBtn').disabled = true;
-        document.getElementById('stopBtn').disabled = false;
-      } catch (err) {
+        document.getElementById('stopBtn').disabled  = false;
+
+      } catch(err){
         log('Camera error:', err.message);
         alert('Could not access the camera. Please allow camera permissions and use HTTPS (or localhost).');
       }
     }
 
-    function stop() {
+    function stop(){
       if (rafId) cancelAnimationFrame(rafId); rafId=null;
       if (procId) cancelAnimationFrame(procId); procId=null;
-      if (stream) { stream.getTracks().forEach(t=>t.stop()); stream=null; }
-      document.getElementById('startBtn').disabled = false;
-      document.getElementById('stopBtn').disabled = true;
-      updateStatus('fr', 'FPS: —'); updateStatus('coverage', 'Coverage: —'); updateStatus('torchState', torchOn?'Torch: on':'Torch: —');
-      document.getElementById('bpm').textContent = '—';
-      setQuality('Poor', 'Stopped. Tap Start to measure again.');
+      if (estId) clearInterval(estId); estId=null;
+      if (stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; }
+      document.getElementById('startBtn').disabled=false;
+      document.getElementById('stopBtn').disabled=true;
+      document.getElementById('torchBtn').disabled=true;
+      setText('fr','FPS: —'); setText('coverage','Coverage: —'); setText('torchState','Torch: —');
+      setText('sat','Saturation: —'); setText('sqi','SQI: —');
+      setText('bpm','—'); setText('hrvBeats','Beats: —'); setText('hrvQual','HRV Quality: —');
+      setText('meanHR','—'); setText('sdnn','—'); setText('rmssd','—'); setText('pnn50','—'); setText('rrUsed','—'); setText('rrDropped','—');
+      setScoresInvalid();
+      setQuality('Poor','Stopped. Tap Start to measure again.');
+      beatTimes.length = 0; lastAppendedBeatTime = 0;
+      // Reset smoothing so next run is fresh
+      estimateBPM.smooth = undefined;
     }
 
-    function initCanvas() {
-      drawCvs = document.getElementById('wave'); drawCtx = drawCvs.getContext('2d');
+    async function toggleTorch(){
+      if (!track || !track.applyConstraints) return;
+      try{
+        torchOn = !torchOn;
+        await track.applyConstraints({ advanced:[{ torch: torchOn }] });
+        setText('torchState', 'Torch: ' + (torchOn?'on':'off'));
+      } catch(e){ log('Torch toggle failed:', e.message); }
+    }
+
+    function initCanvas(){
+      drawCvs = document.getElementById('wave');
+      drawCtx = drawCvs.getContext('2d');
       const dpr = Math.min(2, window.devicePixelRatio || 1);
       const rect = drawCvs.getBoundingClientRect();
-      drawCvs.width = Math.floor(rect.width * dpr);
+      drawCvs.width  = Math.floor(rect.width * dpr);
       drawCvs.height = Math.floor(rect.height * dpr);
-      cvs = document.createElement('canvas'); ctx = cvs.getContext('2d', { willReadFrequently: true });
-      cvs.width = 160; cvs.height = 120; // downsampled analysis res
+
+      // Processing canvas (downsampled)
+      cvs = document.createElement('canvas');
+      ctx = cvs.getContext('2d', { willReadFrequently: true });
+      cvs.width = 160; cvs.height = 120;
     }
 
-    function processFrame(ts) {
-      if (!v.videoWidth) return;
-      ctx.drawImage(v, 0, 0, cvs.width, cvs.height);
-      const frame = ctx.getImageData(0, 0, cvs.width, cvs.height);
-
-      // coverage quality
-      const cov = coverageMetric(frame, cvs.width, cvs.height);
-      updateStatus('coverage', `Coverage: ${(cov*100).toFixed(0)}%`);
-
-      // compute mean red channel intensity
-      let sumR=0; const data=frame.data; for (let i=0;i<data.length;i+=4){ sumR += data[i]; }
-      const meanR = sumR / (data.length/4);
-
-      // Bandpass via simple HP (0.5 Hz) + LP (4 Hz) IIR tuned to TARGET_FPS
-      if (!processFrame.hp) {
-        const hpAlpha = 1 - Math.exp(-2*Math.PI*0.5 / TARGET_FPS); // 0.5 Hz
-        const lpAlpha = 1 - Math.exp(-2*Math.PI*4.0 / TARGET_FPS); // 4 Hz
-        processFrame.hp = makeOnePoleHP(hpAlpha);
-        processFrame.lp = makeOnePoleLP(lpAlpha);
-      }
-      const hp = processFrame.hp(meanR);
-      const bp = processFrame.lp(hp);
-
-      // Normalize
-      const norm = (bp - (processFrame.mu = (processFrame.mu??bp) + 0.002*(bp - (processFrame.mu??bp)))) / (Math.sqrt(rollingRMS()) + 1e-6);
-
-      const now = performance.now() / 1000;
-      times[wr] = now; samples[wr] = norm; wr = (wr + 1) % MAX_SAMPLES; count = Math.min(count + 1, MAX_SAMPLES);
-
-      // FPS
-      const dt = now - (processFrame.lastTs || now); processFrame.lastTs = now;
-      const fps = 1 / Math.max(dt, 1/120);
-      updateStatus('fr', 'FPS: ' + fps.toFixed(0));
-
-      // Quality feedback
-      if (cov < 0.25) setQuality('Poor', 'Cover the camera fully with your fingertip.');
-      else if (fps < 20) setQuality('Fair', 'Low frame rate. Close other apps or reduce motion.');
-      else setQuality('Good', 'Hold steady. Breathe normally.');
-
-      // BPM estimation every frame (uses 8s window internally)
-      const { bpm } = bpmFromPeaks();
-      if (!isNaN(bpm)) {
-        const smooth = (processFrame.sBPM = (processFrame.sBPM ?? bpm) * 0.85 + bpm * 0.15);
-        const bpmText = Math.round(smooth);
-        document.getElementById('bpm').textContent = bpmText;
-        if (bpmText < 40 || bpmText > 200) setQuality('Poor', 'Out-of-range reading. Adjust finger pressure and lighting.');
-      }
-
-      prevX = norm;
-    }
-
-    function runProcessing() {
-      const loop = () => { processFrame(); procId = requestAnimationFrame(loop); };
+    function runProcessing(){
+      const loop = () => { if (!visibilityPaused){ processFrame(); } procId = requestAnimationFrame(loop); };
       loop();
       draw();
+      estId = setInterval(()=>{ if (!visibilityPaused) estimateBPM(); }, 1000);
     }
 
-    // DOM init
-    window.addEventListener('load', () => {
+    // Pause on tab hide (avoid phantom jumps)
+    document.addEventListener('visibilitychange', ()=>{
+      visibilityPaused = document.hidden;
+      if (visibilityPaused){
+        if (procId) cancelAnimationFrame(procId); procId=null;
+        if (estId) clearInterval(estId); estId=null;
+      } else if (stream){
+        runProcessing();
+      }
+    });
+
+    // ===== DOM ready =====
+    window.addEventListener('DOMContentLoaded', () => {
       v = document.getElementById('video');
-      initCanvas();
-      window.addEventListener('resize', initCanvas);
+      preview = document.getElementById('preview');
       document.getElementById('startBtn').addEventListener('click', start);
-      document.getElementById('stopBtn').addEventListener('click', stop);
-      setQuality('Poor', 'Tap Start, then place your fingertip gently over the rear camera.');
+      document.getElementById('stopBtn').addEventListener('click', stop, { passive: true });
+      document.getElementById('torchBtn').addEventListener('click', toggleTorch, { passive: true });
+      setQuality('Poor','Tap Start, then place your fingertip gently over the rear camera.');
     });
   </script>
 </body>
